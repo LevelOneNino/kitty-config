@@ -1,10 +1,12 @@
 """draw kitty tab"""
+
 # pyright: reportMissingImports=false
 # pylint: disable=E0401,C0116,C0103,W0603,R0913
 
 import datetime
 
-from kitty.fast_data_types import Screen, get_options
+from kitty.boss import get_boss
+from kitty.fast_data_types import Screen, get_options, add_timer
 from kitty.tab_bar import (
     DrawData,
     ExtraData,
@@ -18,6 +20,8 @@ from kitty.utils import color_as_int
 opts = get_options()
 
 DATE_TIME_FG = as_rgb(color_as_int(opts.color12))
+REFRESH_TIME = 5
+timer_id = None
 
 
 def _draw_left_status(
@@ -47,7 +51,6 @@ def _draw_right_status(screen: Screen, is_last: bool) -> int:
     if not is_last:
         return screen.cursor.x
 
-
     cells = [
         (DATE_TIME_FG, 0, datetime.datetime.now().strftime(" %B %d, %Y | %H:%M ")),
     ]
@@ -71,6 +74,12 @@ def _draw_right_status(screen: Screen, is_last: bool) -> int:
     return screen.cursor.x
 
 
+def _redraw_tab_bar(_):
+    tm = get_boss().active_tab_manager
+    if tm is not None:
+        tm.mark_tab_bar_dirty()
+
+
 def draw_tab(
     draw_data: DrawData,
     screen: Screen,
@@ -81,6 +90,11 @@ def draw_tab(
     is_last: bool,
     extra_data: ExtraData,
 ) -> int:
+    global timer_id
+
+    if timer_id is None:
+        timer_id = add_timer(_redraw_tab_bar, REFRESH_TIME, True)
+
     end = _draw_left_status(
         draw_data,
         screen,
