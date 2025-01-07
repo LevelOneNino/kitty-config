@@ -12,14 +12,13 @@ from kitty.tab_bar import (
     ExtraData,
     TabBarData,
     as_rgb,
-    draw_tab_with_powerline,
     draw_title,
 )
 from kitty.utils import color_as_int
 
 opts = get_options()
 
-DATE_TIME_FG = as_rgb(color_as_int(opts.color12))
+DATE_TIME_FG = as_rgb(color_as_int(opts.color8))
 REFRESH_TIME = 5
 timer_id = None
 
@@ -51,9 +50,8 @@ def _draw_right_status(screen: Screen, is_last: bool) -> int:
     if not is_last:
         return screen.cursor.x
 
-    cells = [
-        (DATE_TIME_FG, 0, datetime.datetime.now().strftime(" %B %d, %Y | %H:%M ")),
-    ]
+    cells = [(DATE_TIME_FG, 0,
+              datetime.datetime.now().strftime(" %B %d, %Y | %H:%M "))]
 
     right_status_length = 0
     for _, _, cell in cells:
@@ -70,7 +68,8 @@ def _draw_right_status(screen: Screen, is_last: bool) -> int:
     screen.cursor.fg = 0
     screen.cursor.bg = 0
 
-    screen.cursor.x = max(screen.cursor.x, screen.columns - right_status_length)
+    screen.cursor.x = max(screen.cursor.x,
+                          screen.columns - right_status_length)
     return screen.cursor.x
 
 
